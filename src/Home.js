@@ -4,36 +4,49 @@ import BlogList from "./BlogList";
 
 const Home = () => {
   const [blogs, setBlogs] = useState(null);
-
+  const [isPending, setIsPending] = useState(true);
+  const [error, setError] = useState(null);
 
   //this function will always be fired off once the page is rendered, first load and every time as the data changes
   useEffect(() => {
     //changing the state inside side effect could be a bad idea because you could create an infinite loop
-     console.log('use effect ran');
-     fetch('http://localhost:8000/blogs')
-      .then(res => {              //async is not possible inside useEffect, maybe with reference to external function
+    setTimeout(() => {
+      fetch("http://localhost:8000/blogs") // start server command, cd into blog then npx json-server --watch data/database.json --port 8000
+        .then((res) => {
+          //.then necessary because async is not possible inside useEffect, maybe with reference to external function
+          console.log(res);
+          if (!res.ok) {
+            throw Error("Could not fetch the data for that resource");
+          }
           return res.json();
-      })
-      .then((data) => {
-        console.log(data);
-        setBlogs(data);
-      }) 
-     
-
-     //dependency array: will only be run when certain conditions are met and not always at every re-render
+        })
+        .then((data) => {
+          setBlogs(data);
+          setIsPending(false);
+          setError(null);
+        })
+        .catch((err) => {
+          setIsPending(false);
+          setError(err.message);
+        });
+    }, 300);
+    //dependency array: will only be run when certain conditions are met and not always at every re-render
   }, []); //watches after variable in [] brackets, once it changes it will run the function useEffect
- 
 
   return (
     <div className="home">
-        {/* handle delete will be evoked inside BlogList.js component but it is defined here above*/}
-        {blogs && <BlogList blogs={blogs} title="All Blogs!" />}
-     
+      {error && <div>{error}</div>}
+      {
+        isPending && (
+          <div>Loading</div>
+        ) /*output the div only when isPending is true*/
+      }
+      {blogs && <BlogList blogs={blogs} title="All Blogs!" />}
 
-        {/* filter: return array for true items of call backfunction */}
-        {/* <BlogList blogs={blogs.filter((blog) => blog.author === 'Paz')} title="Paz' Blogs!"/>  */}
+      {/* filter: return array for true items of call backfunction */}
+      {/* <BlogList blogs={blogs.filter((blog) => blog.author === 'Paz')} title="Paz' Blogs!"/>  */}
     </div>
-  )
+  );
 };
 
 export default Home;
