@@ -26,7 +26,7 @@ const useFetch = (url) => {
           setIsPending(false);
           setError(err.message);
         });
-    }, 300);
+    }, 3000);
     //dependency array: will only be run when certain conditions are met and not always at every re-render
   }, []); //watches after variable in [] brackets, once it changes it will run the function useEffect
 
